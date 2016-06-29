@@ -15,10 +15,12 @@ struct UltravisualLayoutConstants {
         static let standardHeight: CGFloat = 100
         /* The height of the first visible cell */
         static let featuredHeight: CGFloat = 280
+
+        static let featuredAngle: Double   = -45
     }
 }
 
-class UltravisualLayout: UICollectionViewFlowLayout {
+class UltravisualLayout: UICollectionViewLayout {
   
     // MARK: Properties and Variables
       
@@ -59,7 +61,7 @@ class UltravisualLayout: UICollectionViewFlowLayout {
     /* Returns the number of items in the collection view */
     var numberOfItems: Int {
         get {
-        return collectionView!.numberOfItemsInSection(0)
+            return collectionView!.numberOfItemsInSection(0)
         }
         set {
             self.numberOfItems = newValue
@@ -82,6 +84,9 @@ class UltravisualLayout: UICollectionViewFlowLayout {
 
         let standardHeight = UltravisualLayoutConstants.Cell.standardHeight
         let featuredHeight = UltravisualLayoutConstants.Cell.featuredHeight
+        let featuredAngle  = UltravisualLayoutConstants.Cell.featuredAngle
+        
+        let angleToRadianClosure = { CGFloat($0 / 180 * M_PI) }
         
         var originY: CGFloat = 0
     
@@ -89,22 +94,31 @@ class UltravisualLayout: UICollectionViewFlowLayout {
         
             var height = standardHeight
         
-            let indexPath = NSIndexPath(forItem: item, inSection: 0)
-            let attributes = UICollectionViewLayoutAttributes(forCellWithIndexPath: indexPath)
-            
+            let indexPath     = NSIndexPath(forItem: item, inSection: 0)
+            let attributes    = UICollectionViewLayoutAttributes(forCellWithIndexPath: indexPath)
             attributes.zIndex = item
+            
+            var transform3DIdentity = CATransform3DIdentity
+            transform3DIdentity.m34 = -1 / 500.0
+            transform3DIdentity.m43 = CGFloat(item) * 100 // 调整z方向上层次
+            attributes.transform3D = CATransform3DRotate(transform3DIdentity, angleToRadianClosure(featuredAngle), 1, 0, 0)
             
             if item == featuredItemIndex {
                 
                 height = featuredHeight
                 // 当 featuredItemIndex = featuredItemIndex + 1 时 临界点 (contentOffset.y变化)，下一张item的y位置应该是contentOffset.y，所以这里慢慢做滑动将图片上移
                 originY = collectionView!.contentOffset.y - standardHeight * nextItemPercentageOffset
+                
+                attributes.transform3D = CATransform3DIdentity
             }
             else if item == featuredItemIndex + 1 {
                 let heightOffset = max(0, (featuredHeight - standardHeight) * nextItemPercentageOffset)
                 height = standardHeight + heightOffset
                 // 当 featureItemIndex = item 时 临界点 ，此item.y位置应该是contentOffset.y，但是item.y ＝ 上一个(originY + height = contentOffset.y - standardHeight * nextItemPercentageOffset + featuredItemIndex * nextItemPercentageOffset(这个percent可以添加上，因为已经马上就是1了)  )
                 originY -= heightOffset
+                
+                let angleOffset = max(featuredAngle, Double(1 - nextItemPercentageOffset) * featuredAngle)
+                attributes.transform3D = CATransform3DRotate(transform3DIdentity, angleToRadianClosure(angleOffset), 1, 0, 0)
             }
         
             attributes.frame = CGRect(x: 0, y: originY, width: width, height: height)

@@ -173,7 +173,7 @@ override func prepareLayout() {
 ```
 1. 创建角度转弧度closure
 
-3. 设置attributes默认transform3D`m34的值设置可以增加3D效果，`，`m43参数适用来调整视图的z轴层次感，100只是一个随机值，可以试一下去除，看看效果` 主要是为了在滚动过程中featured有可能会下一个正在转动的feature部分覆盖掉。可以不做处理试验一下。使用debug view hierarchy查看布局
+3. 设置attributes默认transform3D*`m34的值设置可以增加3D效果`*，*`m43参数适用来调整视图的z轴层次感，100只是一个随机值，可以试一下去除，看看效果`* 主要是为了在滚动过程中featured有可能会下一个正在转动的feature部分覆盖掉。可以不做处理试验一下。使用debug view hierarchy查看布局
 ![](./hierarchy.png)
 4. featured item则显示恢复状态
 5. 根据滚动百分比计算旋转的角度，这个比较简单
